@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.moviesappmvp.adapters.TabAdapter;
+import com.example.moviesappmvp.tabs.FavouriteMoviesFragment;
 import com.example.moviesappmvp.tabs.NowPlayingMoviesFragment;
 import com.example.moviesappmvp.tabs.PopularMoviesFragment;
 import com.google.android.material.tabs.TabLayout;
@@ -23,12 +24,14 @@ public class MoviesListActivity extends AppCompatActivity {
 
         final PopularMoviesFragment popularMoviesFragment = new PopularMoviesFragment();
         NowPlayingMoviesFragment nowPlayingMoviesFragment = new NowPlayingMoviesFragment();
+        FavouriteMoviesFragment favouriteMoviesFragment = new FavouriteMoviesFragment();
 
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         adapter = new TabAdapter(getSupportFragmentManager(), 0);
         adapter.addFragment(popularMoviesFragment, "Popular");
         adapter.addFragment(nowPlayingMoviesFragment, "Now Playing");
+        adapter.addFragment(favouriteMoviesFragment, "Favourites");
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
     }

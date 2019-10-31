@@ -29,6 +29,11 @@ public class MovieListPresenter {
         this.movieListView = null;
     }
 
+    public void getFavouriteMovies() {
+        SetFavouritesTask t = new SetFavouritesTask();
+        t.execute();
+    }
+
     public void getMorePopularMovies(int pageNo) {
         if (movieListView != null) {
             movieListView.showProgress();
@@ -36,8 +41,8 @@ public class MovieListPresenter {
         movieListModel.getPopularMovieList(new MovieListModel.OnFinishedListener() {
             @Override
             public void onFinished(List<Movie> movieArrayList) {
-                movieListView.setDataToViews(movieArrayList);
                 if (movieListView != null) {
+                    movieListView.setDataToViews(movieArrayList);
                     movieListView.hideProgress();
                 }
             }
@@ -77,8 +82,8 @@ public class MovieListPresenter {
                             }
                         }
 
-                        movieListView.setDataToViews(movieArrayList);
                         if (movieListView != null) {
+                            movieListView.setDataToViews(movieArrayList);
                             movieListView.hideProgress();
                         }
                     }
@@ -102,8 +107,8 @@ public class MovieListPresenter {
         movieListModel.getNowPlayingMovieList(new MovieListModel.OnFinishedListener() {
             @Override
             public void onFinished(List<Movie> movieArrayList) {
-                movieListView.setDataToViews(movieArrayList);
                 if (movieListView != null) {
+                    movieListView.setDataToViews(movieArrayList);
                     movieListView.hideProgress();
                 }
             }
@@ -143,8 +148,8 @@ public class MovieListPresenter {
                             }
                         }
 
-                        movieListView.setDataToViews(movieArrayList);
                         if (movieListView != null) {
+                            movieListView.setDataToViews(movieArrayList);
                             movieListView.hideProgress();
                         }
                     }
@@ -199,6 +204,33 @@ public class MovieListPresenter {
         @Override
         protected void onPostExecute(List<Movie> movies) {
             isFavouriteLiveData.setValue(movies);
+            if (movieListView != null)
+                movieListView.setDataToViews(movies);
+            super.onPostExecute(movies);
+        }
+    }
+
+    private class SetFavouritesTask extends AsyncTask<Void, Void, List<Movie>> {
+        @Override
+        protected void onPreExecute() {
+            movieListView.showProgress();
+            super.onPreExecute();
+        }
+
+        @Override
+        protected List<Movie> doInBackground(Void... voids) {
+            List<Movie> list = movieDao
+                    .getAll();
+            Log.e("MovieListPresenter", "SetFavouritesTask Movies in db " + list.size());
+            return list;
+        }
+
+        @Override
+        protected void onPostExecute(List<Movie> movies) {
+            movieListView.hideProgress();
+            isFavouriteLiveData.setValue(movies);
+            if (movieListView != null)
+                movieListView.setDataToViews(movies);
             super.onPostExecute(movies);
         }
     }
