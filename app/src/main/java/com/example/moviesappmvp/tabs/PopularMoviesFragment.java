@@ -17,8 +17,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.moviesappmvp.MovieDetailsActivity;
-import com.example.moviesappmvp.adapters.MoviesAdapter;
 import com.example.moviesappmvp.R;
+import com.example.moviesappmvp.adapters.MoviesAdapter;
+import com.example.moviesappmvp.database.AppDatabase;
+import com.example.moviesappmvp.database.DatabaseClient;
 import com.example.moviesappmvp.models.Movie;
 import com.example.moviesappmvp.presenters.MovieListPresenter;
 
@@ -45,8 +47,9 @@ public class PopularMoviesFragment extends ParentFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.movies_list_layout, container, false);
 
+        AppDatabase db = DatabaseClient.getInstance(getContext()).getAppDatabase();
+        movieListPresenter = new MovieListPresenter(this, db.movieDao());
         buildUI(view);
-        movieListPresenter = new MovieListPresenter(this);
         movieListPresenter.getPopularMovies();
 
         return view;
@@ -58,7 +61,7 @@ public class PopularMoviesFragment extends ParentFragment {
         pbLoading = view.findViewById(R.id.pb_loading);
 
         moviesList = new ArrayList<>();
-        moviesAdapter = new MoviesAdapter(this, moviesList);
+        moviesAdapter = new MoviesAdapter(this, moviesList, movieListPresenter, this);
 
         mLayoutManager = new GridLayoutManager(getContext(), 2);
         rvMovieList.setLayoutManager(mLayoutManager);
@@ -142,5 +145,9 @@ public class PopularMoviesFragment extends ParentFragment {
         Intent detailIntent = new Intent(getContext(), MovieDetailsActivity.class);
         detailIntent.putExtra("movie_id", moviesList.get(position).getId());
         startActivity(detailIntent);
+    }
+
+    public void onMovieItemFavouriteClick(Movie movie, boolean isFavourite) {
+        movieListPresenter.toggleFavourite(movie, isFavourite);
     }
 }

@@ -21,11 +21,14 @@ public class MoviesListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final PopularMoviesFragment popularMoviesFragment = new PopularMoviesFragment();
+        NowPlayingMoviesFragment nowPlayingMoviesFragment = new NowPlayingMoviesFragment();
+
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         adapter = new TabAdapter(getSupportFragmentManager(), 0);
-        adapter.addFragment(new PopularMoviesFragment(), "Popular");
-        adapter.addFragment(new NowPlayingMoviesFragment(), "Now Playing");
+        adapter.addFragment(popularMoviesFragment, "Popular");
+        adapter.addFragment(nowPlayingMoviesFragment, "Now Playing");
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
     }

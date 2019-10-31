@@ -31,4 +31,7 @@ public abstract class ParentFragment extends Fragment implements ViewActionsMovi
     public void onMovieItemClick(int position) {
 
     }
+
+    public void onMovieItemFavouriteClick(Movie movie, boolean isFavourite) {
+    }
 }

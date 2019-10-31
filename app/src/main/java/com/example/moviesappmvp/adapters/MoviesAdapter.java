@@ -1,15 +1,18 @@
 package com.example.moviesappmvp.adapters;
 
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -21,6 +24,7 @@ import com.bumptech.glide.request.target.Target;
 import com.example.moviesappmvp.R;
 import com.example.moviesappmvp.api.ApiClient;
 import com.example.moviesappmvp.models.Movie;
+import com.example.moviesappmvp.presenters.MovieListPresenter;
 import com.example.moviesappmvp.tabs.ParentFragment;
 
 import java.util.List;
@@ -30,10 +34,14 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
 
     private ParentFragment movieListActivity;
     private List<Movie> movieList;
+    private ParentFragment fragment;
+    private MovieListPresenter movieListPresenter;
 
-    public MoviesAdapter(ParentFragment movieListActivity, List<Movie> movieList) {
+    public MoviesAdapter(ParentFragment movieListActivity, List<Movie> movieList, MovieListPresenter movieListPresenter, ParentFragment fragment) {
         this.movieListActivity = movieListActivity;
         this.movieList = movieList;
+        this.movieListPresenter = movieListPresenter;
+        this.fragment = fragment;
     }
 
     @NonNull
@@ -47,10 +55,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
 
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
-        Movie movie = movieList.get(position);
+        final Movie movie = movieList.get(position);
 
         holder.tvMovieTitle.setText(movie.getTitle());
-        holder.tvMovieRatings.setText(String.valueOf(movie.getRating()));
         holder.tvReleaseDate.setText(movie.getReleaseDate());
 
         Glide.with(movieListActivity)
@@ -71,6 +78,39 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
                 .apply(new RequestOptions().placeholder(R.drawable.ic_launcher_background).error(R.drawable.ic_launcher_background))
                 .into(holder.ivMovieThumb);
 
+        MovieListPresenter.isFavouriteLiveData.observe(fragment, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                Log.e("MoviesAdapter", movies.size() + " changed " + movie.getTitle());
+                int counter = 0;
+                for (Movie m : movies) {
+                    if (movie.getId() == m.getId()) {
+                        Log.e("MoviesAdapter", "db contains" + m.getTitle());
+                        counter++;
+                    }
+                }
+                movie.isFavourite = counter > 0;
+
+                if (movie.isFavourite) holder.favourite.setImageResource(R.drawable.ic_favorite);
+                else holder.favourite.setImageResource(R.drawable.ic_favorite_border);
+            }
+        });
+
+        if (movie.isFavourite) holder.favourite.setImageResource(R.drawable.ic_favorite);
+        else holder.favourite.setImageResource(R.drawable.ic_favorite_border);
+
+        holder.favourite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                movie.isFavourite = !movie.isFavourite;
+                if (movie.isFavourite)
+                    holder.favourite.setImageResource(R.drawable.ic_favorite);
+                else holder.favourite.setImageResource(R.drawable.ic_favorite_border);
+                movieListPresenter.toggleFavourite(movie, movie.isFavourite);
+
+            }
+        });
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -85,10 +125,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
-
         TextView tvMovieTitle;
-
-        TextView tvMovieRatings;
 
         TextView tvReleaseDate;
 
@@ -96,14 +133,16 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
 
         ProgressBar pbLoadImage;
 
+        ImageButton favourite;
+
         MyViewHolder(View itemView) {
             super(itemView);
 
             tvMovieTitle = itemView.findViewById(R.id.tv_movie_title);
             tvReleaseDate = itemView.findViewById(R.id.tv_release_date);
-            tvMovieRatings = itemView.findViewById(R.id.tv_movie_ratings);
             ivMovieThumb = itemView.findViewById(R.id.iv_movie_thumb);
             pbLoadImage = itemView.findViewById(R.id.pb_load_image);
+            favourite = itemView.findViewById(R.id.ib_favourite);
         }
     }
 }
